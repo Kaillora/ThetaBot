@@ -1,0 +1,6 @@
+2026_simplify_internships: https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/refs/heads/dev/README.md
+2026_simplify_new_grad: https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/refs/heads/dev/README.md
+2026_jobright_swe_internship: https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Internship/refs/heads/master/README.md
+2026_jobright_swe_new_grad: https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-New-Grad/refs/heads/master/README.md
+2026_jobright_engineering_internship: https://raw.githubusercontent.com/jobright-ai/2026-Engineer-Internship/refs/heads/master/README.md
+2026_jobright_engineering_new_grad: https://raw.githubusercontent.com/jobright-ai/2026-Engineering-New-Grad/refs/heads/master/README.md
