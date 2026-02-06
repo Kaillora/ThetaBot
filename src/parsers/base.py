@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
-from datetime import date
 from abc import ABC, abstractmethod
 import requests
 import re

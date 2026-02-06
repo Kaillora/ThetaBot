@@ -1,1 +1,27 @@
+# Environment
 .env
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.vscode/
+.idea/
+
+# Local testing
+debug_parser.py
+test_parser.py
+
+# Data (keep structure, ignore content)
+data/job_state.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/settings.local.json

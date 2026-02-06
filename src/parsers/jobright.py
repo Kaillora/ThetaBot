@@ -34,14 +34,3 @@ class JobrightParser(BaseParser):
         """Extract text from markdown link: **[Text](url)** -> Text"""
         match = self._text_pattern.search(markdown)
         return match.group(1) if match else markdown.strip("* ")
-    
-parsers = [
-    JobrightParser("https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-Internship/refs/heads/master/README.md"),
-    JobrightParser("https://raw.githubusercontent.com/jobright-ai/2026-Engineer-Internship/refs/heads/master/README.md"),
-    JobrightParser("https://raw.githubusercontent.com/jobright-ai/2026-Software-Engineer-New-Grad/refs/heads/master/README.md"),
-    JobrightParser("https://raw.githubusercontent.com/jobright-ai/2026-Engineering-New-Grad/refs/heads/master/README.md")
-]
-
-all_jobs = []
-for parser in parsers:
-    all_jobs.extend(parser.parse_jobs())
