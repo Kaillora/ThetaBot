@@ -1,24 +1,18 @@
 from typing import Optional
-import re
 from .base import BaseParser, Job
-
 
 class JobrightParser(BaseParser):
     def __init__(self, readme_url: str):
         super().__init__(source_name="jobright", readme_url=readme_url)
-        self._text_pattern = re.compile(r'\[([^\]]+)\]')
 
     def parse_row(self, parts: list[str]) -> Optional[Job]:
-        # Jobright table: Company | Job Title | Location | Work Model | Date
-        # Company format: **[Company Name](company_url)**
-        # Job Title format: **[Job Title](apply_url)**
         if len(parts) < 5:
             return None
 
-        company = self._extract_text(parts[0])
-        title = self._extract_text(parts[1])
-        apply_link = self.extract_url(parts[1]) or ""  # URL is in job title column
+        company = self.extract_text(parts[0])
+        title = self.extract_text(parts[1])
         location = parts[2]
+        apply_link = self.extract_url(parts[1]) or ""
         date_posted = parts[4]
 
         return Job(
@@ -30,7 +24,3 @@ class JobrightParser(BaseParser):
             source=self.source_name
         )
 
-    def _extract_text(self, markdown: str) -> str:
-        """Extract text from markdown link: **[Text](url)** -> Text"""
-        match = self._text_pattern.search(markdown)
-        return match.group(1) if match else markdown.strip("* ")
