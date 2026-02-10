@@ -8,7 +8,7 @@ import re
 
 @dataclass
 class Job:
-    # Represents a single job listing scraped from GitHub repos
+    # represents a single job listing scraped from GitHub repos
     company: str
     title: str
     location: str
@@ -17,11 +17,13 @@ class Job:
     source: str  # "jobright" or "simplify"
     category: Optional[str] = None  # Will be set by NLP classifier later
 
+    # Generate a unique identifier to prevent duplicate posts
     @property
     def unique_id(self) -> str:
-        #Generate a unique identifier to prevent duplicate posts
         return f"{self.company}|{self.title}|{self.location}"
 
+    # Makes Job hashable and comparable based on unique_id. Allows jobs to be put
+    # in a set to deduplicate them
     def __hash__(self):
         return hash(self.unique_id)
 
@@ -34,16 +36,16 @@ class Job:
 class BaseParser(ABC):
     # Abstract base class for job listing parsers.
     # Subclasses must implement:
-    #    - get_readme_url(): Returns the raw GitHub README URL
-    #    - parse_row(parts: list[str]) -> Optional[Job]: Parses a table row into a Job
+    #    get_readme_url(): Returns the raw GitHub README URL
+    #    parse_row(parts: list[str]) -> Optional[Job]: Parses a table row into a Job
     
     
     def __init__(self, source_name: str, readme_url: str):
         self.source_name = source_name
         self.readme_url = readme_url
-        self._link_pattern = re.compile(r'\((https?://.*?)\)')
-        self._text_pattern = re.compile(r'\[([^\]]+)\]')
-        self._html_tag_pattern = re.compile(r'<[^>]+>')
+        self._link_pattern = re.compile(r'\((https?://.*?)\)') # Captures url inside ()
+        self._text_pattern = re.compile(r'\[([^\]]+)\]') # Captures text inside []
+        self._html_tag_pattern = re.compile(r'<[^>]+>') # Captures HTML tags <></>
 
     def extract_text(self, text: str) -> str:
         # Extract plain text from markdown or HTML formatted string
@@ -70,14 +72,14 @@ class BaseParser(ABC):
 
     def extract_rows(self, content: str) -> list[list[str]]:
         rows = []
-        for line in content.splitlines():
+        for line in content.splitlines():   # split readme into lines
             line = line.strip()
             
             if not line.startswith("|") or "---" in line or "Company" in line:
-                continue
+                continue        # Skip non-table, separator and header rows
             
-            parts = [p.strip() for p in line.split("|")]
-            parts = [p for p in parts if p]
+            parts = [p.strip() for p in line.split("|")]    # Split by pipe
+            parts = [p for p in parts if p]                 # Remove empty strings
             
             rows.append(parts)
         return rows
