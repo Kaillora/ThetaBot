@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .config import TOKEN, CHANNEL_ID, CHECK_INTERVAL_HOURS
 from .storage import StateManager
-from .parsers import JobrightParser, Job
+from .parsers import JobrightParser, SimplifyParser, Job
 
 
 # Load repo URLs from data file
@@ -30,19 +30,17 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # State manager for tracking seen jobs
-state = StateManager("data/job_state.json")
+state = StateManager()
 
 
 def get_parsers() -> list:
     """Create parser instances for all repos"""
     parsers = []
     for url in load_repos():
-        # Determine parser type based on URL
         if "jobright" in url:
             parsers.append(JobrightParser(url))
-        # Add SimplifyParser when implemented:
-        # elif "simplify" in url:
-        #     parsers.append(SimplifyParser(url))
+        elif "simplify" in url:
+            parsers.append(SimplifyParser(url))
     return parsers
 
 
@@ -58,6 +56,21 @@ async def create_job_embed(job: Job) -> discord.Embed:
     embed.add_field(name="Posted", value=job.date_posted, inline=True)
     embed.description = f"**[Click here to Apply]({job.apply_link})**"
     embed.set_footer(text=f"Theta Bot | Source: {job.source}")
+    return embed
+
+
+def create_job_embed_from_row(row: dict) -> discord.Embed:
+    """Create a Discord embed from a database row dict"""
+    embed = discord.Embed(
+        title=f"{row['title']} @ {row['company']}",
+        url=row['apply_link'],
+        color=0x00ff00,
+        timestamp=datetime.utcnow()
+    )
+    embed.add_field(name="Location", value=row['location'], inline=True)
+    embed.add_field(name="Posted", value=row['date_posted'], inline=True)
+    embed.description = f"**[Click here to Apply]({row['apply_link']})**"
+    embed.set_footer(text=f"Theta Bot | Source: {row['source']}")
     return embed
 
 
@@ -83,21 +96,27 @@ async def check_jobs():
         all_jobs.extend(jobs)
         print(f"[{parser.source_name}] Found {len(jobs)} jobs")
 
-    # Filter out seen jobs
-    new_jobs = [job for job in all_jobs if not state.is_seen(job.unique_id)]
+    # Store all jobs in database (duplicates are skipped)
+    new_count = state.store_jobs(all_jobs)
+    print(f"Stored {new_count} new jobs in database")
 
-    if new_jobs:
-        print(f"Found {len(new_jobs)} new jobs. Posting...")
+    # Get unposted jobs and send to Discord
+    unposted = state.get_unposted_jobs(50)
 
-        for job in new_jobs[:50]:  # Limit to prevent spam
-            embed = await create_job_embed(job)
+    if unposted:
+        print(f"Posting {len(unposted)} jobs to Discord...")
+        posted_ids = []
+
+        for row in unposted:
+            embed = create_job_embed_from_row(row)
             await channel.send(embed=embed)
+            posted_ids.append(row['id'])
             await asyncio.sleep(1)  # Rate limit protection
 
-        # Mark jobs as seen
-        state.mark_seen([job.unique_id for job in new_jobs])
+        state.mark_posted(posted_ids)
+        print(f"Posted and marked {len(posted_ids)} jobs")
     else:
-        print("No new jobs found.")
+        print("No new jobs to post.")
 
 
 @bot.command()
@@ -109,4 +128,7 @@ async def jobs(ctx):
 
 def run():
     """Start the bot"""
-    bot.run(TOKEN)
+    try:
+        bot.run(TOKEN)
+    finally:
+        state.close()
