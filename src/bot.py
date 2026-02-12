@@ -7,6 +7,7 @@ from datetime import datetime
 from .config import TOKEN, CHANNEL_ID, CHECK_INTERVAL_HOURS
 from .storage import StateManager
 from .parsers import JobrightParser, SimplifyParser, Job
+from .classifier import MajorClassifier
 
 
 # Load repo URLs from data file
@@ -32,14 +33,23 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # State manager for tracking seen jobs
 state = StateManager()
 
+# Job classifier (graceful degradation — bot works without it)
+try:
+    classifier = MajorClassifier()
+    print("Classifier initialized successfully")
+except Exception as e:
+    classifier = None
+    print(f"Classifier unavailable, jobs will post without categories: {e}")
+
 
 def get_parsers() -> list:
     """Create parser instances for all repos"""
     parsers = []
     for url in load_repos():
-        if "jobright" in url:
+        url_lower = url.lower()
+        if "jobright" in url_lower:
             parsers.append(JobrightParser(url))
-        elif "simplify" in url:
+        elif "simplify" in url_lower:
             parsers.append(SimplifyParser(url))
     return parsers
 
@@ -54,6 +64,8 @@ async def create_job_embed(job: Job) -> discord.Embed:
     )
     embed.add_field(name="Location", value=job.location, inline=True)
     embed.add_field(name="Posted", value=job.date_posted, inline=True)
+    if job.category:
+        embed.add_field(name="Category", value=job.category, inline=True)
     embed.description = f"**[Click here to Apply]({job.apply_link})**"
     embed.set_footer(text=f"Theta Bot | Source: {job.source}")
     return embed
@@ -69,6 +81,8 @@ def create_job_embed_from_row(row: dict) -> discord.Embed:
     )
     embed.add_field(name="Location", value=row['location'], inline=True)
     embed.add_field(name="Posted", value=row['date_posted'], inline=True)
+    if row.get('category'):
+        embed.add_field(name="Category", value=row['category'], inline=True)
     embed.description = f"**[Click here to Apply]({row['apply_link']})**"
     embed.set_footer(text=f"Theta Bot | Source: {row['source']}")
     return embed
@@ -95,6 +109,14 @@ async def check_jobs():
         jobs = parser.parse_jobs()
         all_jobs.extend(jobs)
         print(f"[{parser.source_name}] Found {len(jobs)} jobs")
+
+    # Classify jobs by major before storing
+    if classifier and all_jobs:
+        try:
+            classifier.classify_jobs(all_jobs)
+            print(f"Classified {sum(1 for j in all_jobs if j.category)} / {len(all_jobs)} jobs")
+        except Exception as e:
+            print(f"[Classifier] Batch classification failed: {e}")
 
     # Store all jobs in database (duplicates are skipped)
     new_count = state.store_jobs(all_jobs)
