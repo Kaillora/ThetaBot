@@ -11,7 +11,7 @@ class JobrightParser(BaseParser):
 
         company = self.extract_text(parts[0])
         title = self.extract_text(parts[1])
-        location = parts[2]
+        location = parts[2].strip()
         apply_link = self.extract_url(parts[1]) or ""
         date_posted = parts[4]
 
