@@ -10,6 +10,8 @@ class JobrightParser(BaseParser):
             return None
 
         company = self.extract_text(parts[0])
+        if company == '↳':
+            return None
         title = self.extract_text(parts[1])
         location = parts[2].strip()
         apply_link = self.extract_url(parts[1]) or ""
