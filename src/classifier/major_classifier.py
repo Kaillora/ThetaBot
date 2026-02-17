@@ -109,17 +109,10 @@ class MajorClassifier:
     }
 
     def classify_job(self, title: str, retries: int = 1) -> Optional[str]:
-        """Classify a single job title into a major category.
-
+        """
         Calls the HF zero-shot classification API with the job title
         and the configured labels. Returns the top label if its score
         meets the confidence threshold, otherwise None.
-
-        Args:
-            title: The job title string to classify
-
-        Returns:
-            The matched major label, or None if below threshold / error
         """
 
         title_lower = title.lower()
