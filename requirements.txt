@@ -1,6 +1,4 @@
 discord.py
 python-dotenv
 requests
-apscheduler
-transformers
 psycopg2-binary
