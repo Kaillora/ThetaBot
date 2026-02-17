@@ -1,3 +1,3 @@
-from .state import StateManager
+from .database import StateManager
 
 __all__ = ['StateManager']
