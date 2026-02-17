@@ -28,6 +28,6 @@ CLASSIFICATION_LABELS = [
     'Electrical Engineering',
     'Mechanical Engineering',
     'Civil Engineering',
-    'Chemical Engineering',
-    'Biomedical Engineering',
+    'Data Science',
+    'Cybersecurity',
 ]
