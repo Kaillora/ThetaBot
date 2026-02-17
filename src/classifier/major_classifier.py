@@ -106,6 +106,7 @@ class MajorClassifier:
         'soc analyst': 'Cybersecurity',
         'information security': 'Cybersecurity',
         'threat intel': 'Cybersecurity',
+        'it security': 'Cybersecurity',
     }
 
     def classify_job(self, title: str, retries: int = 1) -> Optional[str]:
