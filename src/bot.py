@@ -99,7 +99,7 @@ async def check_jobs():
     print(f"Stored {new_count} new jobs in database")
 
     # 3. Get unposted jobs from DB and classify only those
-    unposted = state.get_unposted_jobs(50)
+    unposted = state.get_unposted_jobs(100)
     classified_count = 0
 
     if classifier and unposted:
@@ -125,28 +125,33 @@ async def check_jobs():
             except Exception as e:
                 print(f"[Classifier] Classification failed: {e}")
 
-    # 4. Post unposted jobs to Discord
+    # 4. Post unposted jobs to Discord (skip General Engineering)
     posted_count = 0
 
     if unposted:
-        print(f"Posting {len(unposted)} jobs to Discord...")
         posted_ids = []
+        skipped = 0
 
         for row in unposted:
-            embed = create_job_embed_from_row(row)
             category = row.get('category') or 'General Engineering'
+            posted_ids.append(row['id'])
+
+            if category == 'General Engineering':
+                skipped += 1
+                continue
+
+            embed = create_job_embed_from_row(row)
             role_id = CATEGORY_ROLE_IDS.get(category)
             if role_id:
                 message = f"<@&{role_id}> New **{category}** opportunity!"
             else:
                 message = f"New **{category}** opportunity!"
             await channel.send(content=message, embed=embed)
-            posted_ids.append(row['id'])
+            posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection
 
         state.mark_posted(posted_ids)
-        posted_count = len(posted_ids)
-        print(f"Posted and marked {posted_count} jobs")
+        print(f"Posted {posted_count} jobs, silently skipped {skipped} General Engineering")
     else:
         print("No new jobs to post.")
 
