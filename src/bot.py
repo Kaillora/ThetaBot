@@ -1,10 +1,10 @@
 """Discord bot for posting job listings"""
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import asyncio
 from datetime import datetime
 
-from .config import TOKEN, CHANNEL_ID, CHECK_INTERVAL_HOURS, CATEGORY_ROLE_IDS
+from .config import TOKEN, CHANNEL_ID, CATEGORY_ROLE_IDS
 from .storage import StateManager
 from .parsers import JobrightParser, SimplifyParser, Job
 from .classifier import MajorClassifier
@@ -75,10 +75,10 @@ def create_job_embed_from_row(row: dict) -> discord.Embed:
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    check_jobs.start()
+    await check_jobs()
+    await bot.close()
 
 
-@tasks.loop(hours=CHECK_INTERVAL_HOURS)
 async def check_jobs():
     """Scheduled task to check for new jobs"""
     print("Checking for new jobs...")
