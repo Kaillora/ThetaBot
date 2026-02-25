@@ -156,6 +156,7 @@ class MajorClassifier:
         'soils': 'Civil Engineering',
         'materials testing': 'Civil Engineering',
         'special inspector': 'Civil Engineering',
+        'construction': 'Civil Engineering',
         # Data Science
         'data scientist': 'Data Science',
         'data analyst': 'Data Science',
