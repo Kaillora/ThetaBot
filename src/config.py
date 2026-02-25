@@ -15,6 +15,7 @@ DATABASE_CONFIG = {
     'dbname': os.getenv('DATABASE_NAME', 'thetabot'),
     'user': os.getenv('DATABASE_USER', 'postgres'),
     'password': os.getenv('DATABASE_PASSWORD', ''),
+    'sslmode': os.getenv('DATABASE_SSLMODE', 'prefer'),
 }
 
 # Scraping settings
