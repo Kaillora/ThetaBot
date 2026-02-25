@@ -1,0 +1,46 @@
+name: Post Job Listings
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # every 2 hours
+  workflow_dispatch:         # manual trigger from GitHub Actions UI
+
+jobs:
+  post-jobs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run bot
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          DATABASE_USER: ${{ secrets.DATABASE_USER }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          CS_ROLE_ID: ${{ secrets.CS_ROLE_ID }}
+          EE_ROLE_ID: ${{ secrets.EE_ROLE_ID }}
+          ME_ROLE_ID: ${{ secrets.ME_ROLE_ID }}
+          CE_ROLE_ID: ${{ secrets.CE_ROLE_ID }}
+          DS_ROLE_ID: ${{ secrets.DS_ROLE_ID }}
+          CYBER_ROLE_ID: ${{ secrets.CYBER_ROLE_ID }}
+          GENERAL_ROLE_ID: ${{ secrets.GENERAL_ROLE_ID }}
+        run: python -X utf8 main.py
