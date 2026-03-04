@@ -35,10 +35,34 @@ class MajorClassifier:
             f"{job_lines}"
         )
         
+        system_message = (
+            "You are classifying job listings for an engineering college job board. "
+            "Each category corresponds to a college major:\n"
+            "- Computer Science: software engineering, web development, cloud computing, "
+            "DevOps, mobile, ML/AI, networking, platform, IT, QA, game development, "
+            "any role primarily involving writing or deploying software\n"
+            "- Electrical Engineering: hardware, circuits, firmware, PCB design, power systems, "
+            "RF, semiconductors, signal processing, FPGA, embedded systems, avionics\n"
+            "- Mechanical Engineering: manufacturing, CAD, aerospace structures, HVAC, "
+            "materials, robotics hardware, propulsion, thermal, fluid dynamics, CNC\n"
+            "- Civil Engineering: structural, geotechnical, transportation, water resources, "
+            "construction, surveying, environmental, urban planning\n"
+            "- Data Science: data analysis, analytics, business intelligence, statistics, "
+            "research science, data engineering\n"
+            "- Cybersecurity: security engineering, penetration testing, SOC, "
+            "threat intelligence, information security\n"
+            "- General Engineering: roles that don't clearly fit any above category\n\n"
+            "When a title is ambiguous, use the company and location for context. "
+            "Software, cloud, and developer roles always belong to Computer Science."
+        )
+
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4.1-nano",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt},
+                ],
                 response_format={"type": "json_object"},
                 temperature=0,
             )
