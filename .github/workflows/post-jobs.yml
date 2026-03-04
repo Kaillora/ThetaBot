@@ -29,7 +29,13 @@ jobs:
       - name: Run bot
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          CS_CHANNEL_ID: ${{ secrets.CS_CHANNEL_ID }}
+          EE_CHANNEL_ID: ${{ secrets.EE_CHANNEL_ID }}
+          ME_CHANNEL_ID: ${{ secrets.ME_CHANNEL_ID }}
+          CE_CHANNEL_ID: ${{ secrets.CE_CHANNEL_ID }}
+          DS_CHANNEL_ID: ${{ secrets.DS_CHANNEL_ID }}
+          CYBER_CHANNEL_ID: ${{ secrets.CYBER_CHANNEL_ID }}
+          COMPE_CHANNEL_ID: ${{ secrets.COMPE_CHANNEL_ID }}
           DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
           DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
@@ -42,5 +48,6 @@ jobs:
           CE_ROLE_ID: ${{ secrets.CE_ROLE_ID }}
           DS_ROLE_ID: ${{ secrets.DS_ROLE_ID }}
           CYBER_ROLE_ID: ${{ secrets.CYBER_ROLE_ID }}
+          COMPE_ROLE_ID: ${{ secrets.COMPE_ROLE_ID }}
           GENERAL_ROLE_ID: ${{ secrets.GENERAL_ROLE_ID }}
         run: python -X utf8 main.py
