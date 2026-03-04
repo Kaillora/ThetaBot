@@ -4,7 +4,7 @@ from discord.ext import commands
 import asyncio
 from datetime import datetime
 
-from .config import TOKEN, CHANNEL_ID, CATEGORY_ROLE_IDS
+from .config import TOKEN, CATEGORY_CHANNEL_IDS, CATEGORY_ROLE_IDS
 from .storage import StateManager
 from .parsers import JobrightParser, SimplifyParser, Job
 from .classifier import MajorClassifier
@@ -82,10 +82,11 @@ async def on_ready():
 async def check_jobs():
     """Scheduled task to check for new jobs"""
     print("Checking for new jobs...")
-    channel = bot.get_channel(CHANNEL_ID)
-    if not channel:
-        print("Channel not found!")
-        return
+    category_channels = {
+        cat: bot.get_channel(cid)
+        for cat, cid in CATEGORY_CHANNEL_IDS.items()
+        if cid
+    }
 
     # 1. Fetch jobs from all parsers
     all_jobs: list[Job] = []
@@ -141,12 +142,21 @@ async def check_jobs():
                 continue
 
             embed = create_job_embed_from_row(row)
-            role_id = CATEGORY_ROLE_IDS.get(category)
-            if role_id:
-                message = f"<@&{role_id}> New **{category}** opportunity!"
+
+            if category == 'Computer Engineering':
+                for target in ('Computer Science', 'Electrical Engineering'):
+                    ch = category_channels.get(target)
+                    if ch:
+                        role_id = CATEGORY_ROLE_IDS.get(target)
+                        msg = f"<@&{role_id}> New **Computer Engineering** opportunity!" if role_id else "New **Computer Engineering** opportunity!"
+                        await ch.send(content=msg, embed=embed)
             else:
-                message = f"New **{category}** opportunity!"
-            await channel.send(content=message, embed=embed)
+                ch = category_channels.get(category)
+                if ch:
+                    role_id = CATEGORY_ROLE_IDS.get(category)
+                    msg = f"<@&{role_id}> New **{category}** opportunity!" if role_id else f"New **{category}** opportunity!"
+                    await ch.send(content=msg, embed=embed)
+
             posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection
 
