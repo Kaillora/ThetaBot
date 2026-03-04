@@ -35,7 +35,7 @@ jobs:
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CS_ROLE_ID: ${{ secrets.CS_ROLE_ID }}
           EE_ROLE_ID: ${{ secrets.EE_ROLE_ID }}
           ME_ROLE_ID: ${{ secrets.ME_ROLE_ID }}
