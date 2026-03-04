@@ -7,19 +7,19 @@ load_dotenv()
 # Discord settings
 TOKEN = os.getenv('DISCORD_TOKEN')
 CATEGORY_CHANNEL_IDS = {
-    'Computer Science':       int(os.getenv('CS_CHANNEL_ID', 0)) or None,
-    'Electrical Engineering': int(os.getenv('EE_CHANNEL_ID', 0)) or None,
-    'Mechanical Engineering': int(os.getenv('ME_CHANNEL_ID', 0)) or None,
-    'Civil Engineering':      int(os.getenv('CE_CHANNEL_ID', 0)) or None,
-    'Data Science':           int(os.getenv('DS_CHANNEL_ID', 0)) or None,
-    'Cybersecurity':          int(os.getenv('CYBER_CHANNEL_ID', 0)) or None,
-    'Computer Engineering':   int(os.getenv('COMPE_CHANNEL_ID', 0)) or None,
+    'Computer Science':       int(os.getenv('CS_CHANNEL_ID') or 0) or None,
+    'Electrical Engineering': int(os.getenv('EE_CHANNEL_ID') or 0) or None,
+    'Mechanical Engineering': int(os.getenv('ME_CHANNEL_ID') or 0) or None,
+    'Civil Engineering':      int(os.getenv('CE_CHANNEL_ID') or 0) or None,
+    'Data Science':           int(os.getenv('DS_CHANNEL_ID') or 0) or None,
+    'Cybersecurity':          int(os.getenv('CYBER_CHANNEL_ID') or 0) or None,
+    'Computer Engineering':   int(os.getenv('COMPE_CHANNEL_ID') or 0) or None,
 }
 
 # Database settings
 DATABASE_CONFIG = {
     'host': os.getenv('DATABASE_HOST', 'localhost'),
-    'port': int(os.getenv('DATABASE_PORT', '5432')),
+    'port': int(os.getenv('DATABASE_PORT') or '5432'),
     'dbname': os.getenv('DATABASE_NAME', 'thetabot'),
     'user': os.getenv('DATABASE_USER', 'postgres'),
     'password': os.getenv('DATABASE_PASSWORD', ''),
