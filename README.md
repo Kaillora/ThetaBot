@@ -1,6 +1,6 @@
 # ThetaBot
 
-Discord bot that scrapes GitHub-hosted job listing repos and posts newly listed engineering internship and new grad roles to a configured channel with @role pings.
+Discord bot that scrapes GitHub-hosted job listing repos and posts newly listed engineering internship and new grad roles to dedicated per-major Discord channels with @role pings.
 
 **Stack:** Python 3.8+, discord.py, PostgreSQL, HuggingFace Inference API
 
@@ -10,8 +10,9 @@ Discord bot that scrapes GitHub-hosted job listing repos and posts newly listed 
 
 - Scrapes 6 GitHub-hosted job listing repos (Jobright and SimplifyJobs)
 - Deduplicates jobs via PostgreSQL so each listing is posted at most once
-- Classifies jobs by engineering discipline (CS, EE, ME, CE, DS, Cybersecurity) using zero-shot NLP
-- Posts job embeds to a Discord channel with @role pings per category
+- Classifies jobs by engineering discipline (CS, EE, ME, CE, DS, Cybersecurity, CompE) using GPT-4.1-nano
+- Routes job embeds to a dedicated Discord channel per major, with @role pings per category
+- Computer Engineering jobs cross-post to both the CS and EE channels with their respective role pings
 - Silently skips jobs that fall under General Engineering (no relevant role ping)
 - Tracks cycle metrics (scraped, new, classified, posted counts)
 
@@ -29,7 +30,7 @@ main.py
         │     └── MajorClassifier (HuggingFace NLI, keyword fast-path)
         ├── storage/
         │     └── StateManager    (PostgreSQL via psycopg2)
-        └── Discord channel
+        └── Per-major Discord channels (CS, EE, ME, CE, DS, Cyber; CompE cross-posts to CS+EE)
 ```
 
 Parsers use a **Template Method** pattern: `BaseParser.parse_jobs()` drives the loop, `extract_rows()` handles table formatting differences, and `parse_row()` is implemented per source. The classifier uses a keyword-map fast path before falling back to a HuggingFace API call. 
@@ -88,19 +89,26 @@ The bot checks for new jobs every 2 hours automatically through GitHub Actions w
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DISCORD_TOKEN` | Yes | — | Discord bot authentication token |
-| `CHANNEL_ID` | Yes | — | ID of the Discord channel where jobs are posted |
 | `DATABASE_PASSWORD` | Yes | — | PostgreSQL user password |
+| `CS_CHANNEL_ID` | Yes | — | Channel ID for Computer Science jobs |
+| `EE_CHANNEL_ID` | Yes | — | Channel ID for Electrical Engineering jobs |
+| `ME_CHANNEL_ID` | Yes | — | Channel ID for Mechanical Engineering jobs |
+| `CE_CHANNEL_ID` | Yes | — | Channel ID for Civil Engineering jobs |
+| `DS_CHANNEL_ID` | Yes | — | Channel ID for Data Science jobs |
+| `CYBER_CHANNEL_ID` | Yes | — | Channel ID for Cybersecurity jobs |
+| `COMPE_CHANNEL_ID` | No | — | Unused (CompE cross-posts to CS + EE channels) |
 | `DATABASE_HOST` | No | `localhost` | PostgreSQL host |
 | `DATABASE_PORT` | No | `5432` | PostgreSQL port |
 | `DATABASE_NAME` | No | — | PostgreSQL database name |
 | `DATABASE_USER` | No | — | PostgreSQL username |
-| `HUGGINGFACE_TOKEN` | No | — | HuggingFace Inference API token |
+| `OPENAI_API_KEY` | No | — | OpenAI API key for GPT-4.1-nano classification |
 | `CS_ROLE_ID` | No | — | Discord role ID to ping for Computer Science jobs |
 | `EE_ROLE_ID` | No | — | Discord role ID to ping for Electrical Engineering jobs |
 | `ME_ROLE_ID` | No | — | Discord role ID to ping for Mechanical Engineering jobs |
 | `CE_ROLE_ID` | No | — | Discord role ID to ping for Civil Engineering jobs |
 | `DS_ROLE_ID` | No | — | Discord role ID to ping for Data Science jobs |
 | `CYBER_ROLE_ID` | No | — | Discord role ID to ping for Cybersecurity jobs |
+| `COMPE_ROLE_ID` | No | — | Discord role ID to ping for Computer Engineering jobs (used in CS + EE channels) |
 
 > **Note:** I used `Neon` as my external PostgreSQL database to host since the free tier is more than sufficient for the job postings. `DATABASE_USER` and `DATABASE_USER` varies on setting the database up locally vs. externally.
 
@@ -115,7 +123,7 @@ The bot checks for new jobs every 2 hours automatically through GitHub Actions w
    - Mention Everyone (required for @role pings)
 3. Enable the following **Privileged Gateway Intents**: Message Content Intent.
 4. Copy the bot token into `.env` as `DISCORD_TOKEN`.
-5. Right-click the target channel in Discord → Copy ID → set as `CHANNEL_ID` in `.env`.
+5. Create one channel per major (CS, EE, ME, CE, DS, Cybersecurity) → right-click each → Copy ID → set as the corresponding `*_CHANNEL_ID` in `.env`.
 6. Right-click each role in Discord → Copy ID → set the corresponding `*_ROLE_ID` values in `.env`.
 
 ---
