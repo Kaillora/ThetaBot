@@ -21,9 +21,8 @@ DATABASE_CONFIG = {
 # Scraping settings
 CHECK_INTERVAL_HOURS = 2  # How often to check for new jobs
 
-# Hugging Face classification settings
-HUGGINGFACE_TOKEN = os.getenv('HUGGINGFACE_TOKEN')
-CLASSIFICATION_CONFIDENCE_THRESHOLD = 0.5
+# OpenAI classification settings
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 CLASSIFICATION_LABELS = [
     'Computer Science',
     'Electrical Engineering',
