@@ -13,20 +13,16 @@ class MajorClassifier:
             raise ValueError("OPENAI_API_KEY not set in .env")
         self.client = OpenAI(api_key=OPENAI_API_KEY)
 
-    def classify_jobs(self, jobs) -> None:
-        """
-        """
+    BATCH_SIZE = 25
 
-        to_api = [job for job in jobs if not job.category]
-        if not to_api:
-            return
-
+    def _classify_batch(self, batch: list) -> None:
+        """Classify a single batch of jobs (up to BATCH_SIZE) via GPT."""
         job_lines = "\n".join(
             f"{i + 1}. {job.title} at {job.company}"
             + (f" in {job.location}" if job.location else "")
-            for i, job in enumerate(to_api)
+            for i, job in enumerate(batch)
         )
-        
+
         prompt = (
             f"Classify each job into one of the respective categories: "
             f"{', '.join(self.LABELS)}.\n\n"
@@ -34,7 +30,7 @@ class MajorClassifier:
             f"in the same order as the jobs listed.\n\n"
             f"{job_lines}"
         )
-        
+
         system_message = (
             "You are classifying job listings for an engineering college job board. "
             "Each category corresponds to a college major:\n"
@@ -60,23 +56,32 @@ class MajorClassifier:
             "Software, cloud, and developer roles always belong to Computer Science."
         )
 
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-4.1-nano",
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": prompt},
-                ],
-                response_format={"type": "json_object"},
-                temperature=0,
-            )
-            
-            result = json.loads(response.choices[0].message.content)
-            categories = result.get("categories", [])
-            
-            for job, category in zip(to_api, categories):
-                if category in self.LABELS:
-                    job.category = category
-            
-        except Exception as e:
-            print(f"[Classifier] GPT classification failed: {e}")
+        response = self.client.chat.completions.create(
+            model="gpt-4.1-nano",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt},
+            ],
+            response_format={"type": "json_object"},
+            temperature=0,
+            timeout=30,
+        )
+
+        result = json.loads(response.choices[0].message.content)
+        categories = result.get("categories", [])
+
+        for job, category in zip(batch, categories):
+            if category in self.LABELS:
+                job.category = category
+
+    def classify_jobs(self, jobs) -> None:
+        to_api = [job for job in jobs if not job.category]
+        if not to_api:
+            return
+
+        for i in range(0, len(to_api), self.BATCH_SIZE):
+            batch = to_api[i:i + self.BATCH_SIZE]
+            try:
+                self._classify_batch(batch)
+            except Exception as e:
+                print(f"[Classifier] GPT classification failed: {e}")
