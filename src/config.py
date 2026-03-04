@@ -6,7 +6,15 @@ load_dotenv()
 
 # Discord settings
 TOKEN = os.getenv('DISCORD_TOKEN')
-CHANNEL_ID = int(os.getenv('CHANNEL_ID', '1466710750390255648'))
+CATEGORY_CHANNEL_IDS = {
+    'Computer Science':       int(os.getenv('CS_CHANNEL_ID', 0)) or None,
+    'Electrical Engineering': int(os.getenv('EE_CHANNEL_ID', 0)) or None,
+    'Mechanical Engineering': int(os.getenv('ME_CHANNEL_ID', 0)) or None,
+    'Civil Engineering':      int(os.getenv('CE_CHANNEL_ID', 0)) or None,
+    'Data Science':           int(os.getenv('DS_CHANNEL_ID', 0)) or None,
+    'Cybersecurity':          int(os.getenv('CYBER_CHANNEL_ID', 0)) or None,
+    'Computer Engineering':   int(os.getenv('COMPE_CHANNEL_ID', 0)) or None,
+}
 
 # Database settings
 DATABASE_CONFIG = {
@@ -21,9 +29,8 @@ DATABASE_CONFIG = {
 # Scraping settings
 CHECK_INTERVAL_HOURS = 2  # How often to check for new jobs
 
-# Hugging Face classification settings
-HUGGINGFACE_TOKEN = os.getenv('HUGGINGFACE_TOKEN')
-CLASSIFICATION_CONFIDENCE_THRESHOLD = 0.5
+# OpenAI classification settings
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 CLASSIFICATION_LABELS = [
     'Computer Science',
     'Electrical Engineering',
@@ -31,6 +38,7 @@ CLASSIFICATION_LABELS = [
     'Civil Engineering',
     'Data Science',
     'Cybersecurity',
+    'Computer Engineering',
 ]
 
 # Map classification labels to Discord role IDs for pinging
@@ -42,5 +50,6 @@ CATEGORY_ROLE_IDS = {
     'Civil Engineering': os.getenv('CE_ROLE_ID'),
     'Data Science': os.getenv('DS_ROLE_ID'),
     'Cybersecurity': os.getenv('CYBER_ROLE_ID'),
+    'Computer Engineering': os.getenv('COMPE_ROLE_ID'),
     'General Engineering': os.getenv('GENERAL_ROLE_ID'),
 }

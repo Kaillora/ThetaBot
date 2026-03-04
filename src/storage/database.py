@@ -16,8 +16,13 @@ class StateManager:
         self._create_table()
 
     def _ensure_connection(self):
-        """Reconnect to PostgreSQL if the connection was lost"""
-        if self.conn.closed:
+        """Reconnect to PostgreSQL if the connection was lost or timed out"""
+        try:
+            if self.conn.closed:
+                raise psycopg2.OperationalError("connection closed")
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        except (psycopg2.OperationalError, psycopg2.InterfaceError):
             self.conn = psycopg2.connect(**DATABASE_CONFIG)
             self.conn.autocommit = True
 
