@@ -2,7 +2,7 @@ name: Post Job Listings
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # every 2 hours
+    - cron: '0 */8 * * *'  # every 8 hours
   workflow_dispatch:         # manual trigger from GitHub Actions UI
 
 jobs:
@@ -35,7 +35,6 @@ jobs:
           CE_CHANNEL_ID: ${{ secrets.CE_CHANNEL_ID }}
           DS_CHANNEL_ID: ${{ secrets.DS_CHANNEL_ID }}
           CYBER_CHANNEL_ID: ${{ secrets.CYBER_CHANNEL_ID }}
-          COMPE_CHANNEL_ID: ${{ secrets.COMPE_CHANNEL_ID }}
           DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
           DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
@@ -48,6 +47,5 @@ jobs:
           CE_ROLE_ID: ${{ secrets.CE_ROLE_ID }}
           DS_ROLE_ID: ${{ secrets.DS_ROLE_ID }}
           CYBER_ROLE_ID: ${{ secrets.CYBER_ROLE_ID }}
-          COMPE_ROLE_ID: ${{ secrets.COMPE_ROLE_ID }}
           GENERAL_ROLE_ID: ${{ secrets.GENERAL_ROLE_ID }}
         run: python -X utf8 main.py
