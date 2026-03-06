@@ -143,19 +143,11 @@ async def check_jobs():
 
             embed = create_job_embed_from_row(row)
 
-            if category == 'Computer Engineering':
-                for target in ('Computer Science', 'Electrical Engineering'):
-                    ch = category_channels.get(target)
-                    if ch:
-                        role_id = CATEGORY_ROLE_IDS.get(target)
-                        msg = f"<@&{role_id}> New **Computer Engineering** opportunity!" if role_id else "New **Computer Engineering** opportunity!"
-                        await ch.send(content=msg, embed=embed)
-            else:
-                ch = category_channels.get(category)
-                if ch:
-                    role_id = CATEGORY_ROLE_IDS.get(category)
-                    msg = f"<@&{role_id}> New **{category}** opportunity!" if role_id else f"New **{category}** opportunity!"
-                    await ch.send(content=msg, embed=embed)
+            ch = category_channels.get(category)
+            if ch:
+                role_id = CATEGORY_ROLE_IDS.get(category)
+                msg = f"<@&{role_id}> New **{category}** opportunity!" if role_id else f"New **{category}** opportunity!"
+                await ch.send(content=msg, embed=embed)
 
             posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection

@@ -13,7 +13,6 @@ CATEGORY_CHANNEL_IDS = {
     'Civil Engineering':      int(os.getenv('CE_CHANNEL_ID') or 0) or None,
     'Data Science':           int(os.getenv('DS_CHANNEL_ID') or 0) or None,
     'Cybersecurity':          int(os.getenv('CYBER_CHANNEL_ID') or 0) or None,
-    'Computer Engineering':   int(os.getenv('COMPE_CHANNEL_ID') or 0) or None,
 }
 
 # Database settings
@@ -38,7 +37,6 @@ CLASSIFICATION_LABELS = [
     'Civil Engineering',
     'Data Science',
     'Cybersecurity',
-    'Computer Engineering',
 ]
 
 # Map classification labels to Discord role IDs for pinging
@@ -50,6 +48,5 @@ CATEGORY_ROLE_IDS = {
     'Civil Engineering': os.getenv('CE_ROLE_ID'),
     'Data Science': os.getenv('DS_ROLE_ID'),
     'Cybersecurity': os.getenv('CYBER_ROLE_ID'),
-    'Computer Engineering': os.getenv('COMPE_ROLE_ID'),
     'General Engineering': os.getenv('GENERAL_ROLE_ID'),
 }
