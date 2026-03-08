@@ -101,6 +101,19 @@ class StateManager:
             )
             return cur.fetchall()
 
+    def get_recent_unposted_jobs(self, days: int = 7) -> list[dict]:
+        """Get unposted jobs inserted within the last N days (backlog catch-up)."""
+        self._ensure_connection()
+        with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """SELECT * FROM jobs
+                   WHERE posted_to_discord = FALSE
+                   AND first_seen_at > NOW() - INTERVAL '1 day' * %s
+                   ORDER BY first_seen_at""",
+                (days,)
+            )
+            return cur.fetchall()
+
     def mark_posted(self, job_ids: list[int]) -> None:
         """Mark jobs as posted to Discord by their database IDs"""
         if not job_ids:
