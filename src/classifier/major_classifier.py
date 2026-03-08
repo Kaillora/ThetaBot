@@ -36,9 +36,6 @@ class MajorClassifier:
             "Assign each job to exactly one category based on the job title. "
             "Use company and location only if the title is ambiguous.\n\n"
 
-            "PRIORITY RULE: If the title contains 'Software Engineer' or 'Software Developer', "
-            "always classify as Computer Science regardless of company or domain.\n\n"
-
             "COMPUTER SCIENCE: Software/web/mobile development, DevOps, cloud, ML/AI, "
             "data engineering, QA/test automation, IT, cloud infrastructure, game dev.\n\n"
 
@@ -78,7 +75,22 @@ class MajorClassifier:
             if category in self.LABELS:
                 job.category = category
 
+    CS_TITLE_KEYWORDS = [
+        'software engineer', 'software developer', 'software development',
+        'frontend engineer', 'backend engineer', 'full stack', 'fullstack',
+        'web developer', 'mobile engineer', 'ios engineer', 'android engineer',
+        'devops engineer', 'site reliability', 'sre', 'ml engineer', 'ai engineer',
+    ]
+
+    def _pre_classify(self, jobs) -> None:
+        """Rule-based pre-classification for unambiguous titles before hitting GPT."""
+        for job in jobs:
+            title_lower = job.title.lower()
+            if any(kw in title_lower for kw in self.CS_TITLE_KEYWORDS):
+                job.category = 'Computer Science'
+
     def classify_jobs(self, jobs) -> None:
+        self._pre_classify(jobs)
         to_api = [job for job in jobs if not job.category]
         if not to_api:
             return
