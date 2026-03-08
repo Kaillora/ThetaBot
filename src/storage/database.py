@@ -94,13 +94,16 @@ class StateManager:
                 (category, job_id)
             )
 
-    def get_unposted_jobs(self, limit: int = 50) -> list[dict]:
-        """Get jobs that haven't been posted to Discord yet"""
+    def get_unposted_jobs(self, limit: int = 50, max_age_hours: int = 24) -> list[dict]:
+        """Get jobs that haven't been posted to Discord yet, inserted within max_age_hours"""
         self._ensure_connection()
         with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
-                "SELECT * FROM jobs WHERE posted_to_discord = FALSE ORDER BY first_seen_at LIMIT %s",
-                (limit,)
+                """SELECT * FROM jobs
+                   WHERE posted_to_discord = FALSE
+                   AND first_seen_at > NOW() - INTERVAL '1 hour' * %s
+                   ORDER BY first_seen_at LIMIT %s""",
+                (max_age_hours, limit)
             )
             return cur.fetchall()
 
