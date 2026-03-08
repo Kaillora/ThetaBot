@@ -102,11 +102,8 @@ async def check_jobs():
     new_count = len(new_ids)
     print(f"Stored {new_count} new jobs in database")
 
-    # 3. Get newly inserted jobs + any recent unposted backlog
-    new_jobs = state.get_unposted_jobs(new_ids)
-    backlog = state.get_recent_unposted_jobs(days=7)
-    seen_ids = {r['id'] for r in new_jobs}
-    unposted = new_jobs + [r for r in backlog if r['id'] not in seen_ids]
+    # 3. Get only the newly inserted jobs from this cycle
+    unposted = state.get_unposted_jobs(new_ids)
     classified_count = 0
 
     if classifier and unposted:
