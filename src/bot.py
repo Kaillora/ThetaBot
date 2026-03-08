@@ -2,9 +2,9 @@
 import discord
 from discord.ext import commands
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from .config import TOKEN, CATEGORY_CHANNEL_IDS, CATEGORY_ROLE_IDS
+from .config import TOKEN, CATEGORY_CHANNEL_IDS, CATEGORY_ROLE_IDS, MAX_JOB_AGE_DAYS
 from .storage import StateManager
 from .parsers import JobrightParser, SimplifyParser, Job
 from .classifier import MajorClassifier
@@ -53,6 +53,21 @@ def get_parsers() -> list:
         elif "simplify" in url_lower:
             parsers.append(SimplifyParser(url))
     return parsers
+
+
+def is_recent(date_str: str) -> bool:
+    """Return True if date_str (e.g. 'Oct 1') is within MAX_JOB_AGE_DAYS days."""
+    if not date_str:
+        return True
+    try:
+        parsed = datetime.strptime(date_str.strip(), "%b %d")
+        now = datetime.utcnow()
+        candidate = parsed.replace(year=now.year)
+        if candidate > now:
+            candidate = candidate.replace(year=now.year - 1)
+        return (now - candidate) <= timedelta(days=MAX_JOB_AGE_DAYS)
+    except ValueError:
+        return True  # Unknown format — don't filter it out
 
 
 def create_job_embed_from_row(row: dict) -> discord.Embed:
@@ -136,6 +151,10 @@ async def check_jobs():
         for row in unposted:
             category = row.get('category') or 'General Engineering'
             posted_ids.append(row['id'])
+
+            if not is_recent(row.get('date_posted', '')):
+                skipped += 1
+                continue
 
             if category == 'General Engineering':
                 skipped += 1

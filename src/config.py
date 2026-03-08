@@ -27,6 +27,7 @@ DATABASE_CONFIG = {
 
 # Scraping settings
 CHECK_INTERVAL_HOURS = 2  # How often to check for new jobs
+MAX_JOB_AGE_DAYS = int(os.getenv('MAX_JOB_AGE_DAYS', '7'))
 
 # OpenAI classification settings
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
