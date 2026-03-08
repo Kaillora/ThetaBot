@@ -106,7 +106,7 @@ async def check_jobs():
     new_jobs = state.get_unposted_jobs(new_ids)
     backlog = state.get_recent_unposted_jobs(days=7)
     seen_ids = {r['id'] for r in new_jobs}
-    unposted = new_jobs + [r for r in backlog if r['id'] not in seen_ids]
+    unposted = (new_jobs + [r for r in backlog if r['id'] not in seen_ids])[:100]
     classified_count = 0
 
     if classifier and unposted:
