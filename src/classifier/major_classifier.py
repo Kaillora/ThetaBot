@@ -36,8 +36,11 @@ class MajorClassifier:
             "Assign each job to exactly one category based on the job title. "
             "Use company and location only if the title is ambiguous.\n\n"
 
+            "PRIORITY RULE: If the title contains 'Software Engineer' or 'Software Developer', "
+            "always classify as Computer Science regardless of company or domain.\n\n"
+
             "COMPUTER SCIENCE: Software/web/mobile development, DevOps, cloud, ML/AI, "
-            "data engineering, QA/test automation, IT, infrastructure, game dev.\n\n"
+            "data engineering, QA/test automation, IT, cloud infrastructure, game dev.\n\n"
 
             "ELECTRICAL ENGINEERING: Hardware design, PCB/circuit design, embedded systems, "
             "FPGA/ASIC, RF, power electronics, semiconductor, signal processing, avionics.\n\n"
