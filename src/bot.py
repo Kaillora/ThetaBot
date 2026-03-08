@@ -141,7 +141,6 @@ async def check_jobs():
 
         for row in unposted:
             category = row.get('category') or 'General Engineering'
-            posted_ids.append(row['id'])
 
             if category == 'General Engineering':
                 skipped += 1
@@ -155,6 +154,7 @@ async def check_jobs():
                 msg = f"<@&{role_id}> New **{category}** opportunity!" if role_id else f"New **{category}** opportunity!"
                 await ch.send(content=msg, embed=embed)
 
+            posted_ids.append(row['id'])
             posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection
 
