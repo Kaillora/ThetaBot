@@ -4,7 +4,7 @@ from discord.ext import commands
 import asyncio
 from datetime import datetime
 
-from .config import TOKEN, CATEGORY_CHANNEL_IDS, CATEGORY_ROLE_IDS, CHECK_INTERVAL_HOURS
+from .config import TOKEN, CATEGORY_CHANNEL_IDS, CATEGORY_ROLE_IDS
 from .storage import StateManager
 from .parsers import JobrightParser, SimplifyParser, Job
 from .classifier import MajorClassifier
@@ -58,9 +58,10 @@ def get_parsers() -> list:
 
 def create_job_embed_from_row(row: dict) -> discord.Embed:
     """Create a Discord embed from a database row dict"""
+    apply_link = row.get('apply_link') or None
     embed = discord.Embed(
         title=f"{row['title']} @ {row['company']}",
-        url=row['apply_link'],
+        url=apply_link,
         color=0x00ff00,
         timestamp=datetime.utcnow()
     )
@@ -68,7 +69,7 @@ def create_job_embed_from_row(row: dict) -> discord.Embed:
     embed.add_field(name="Posted", value=row['date_posted'], inline=True)
     if row.get('category'):
         embed.add_field(name="Category", value=row['category'], inline=True)
-    embed.description = f"**[Click here to Apply]({row['apply_link']})**"
+    embed.description = f"**[Click here to Apply]({apply_link})**" if apply_link else "*No apply link available*"
     embed.set_footer(text=f"Theta Bot | Source: {row['source']}")
     return embed
 
@@ -97,11 +98,12 @@ async def check_jobs():
         print(f"[{parser.source_name}] Found {len(jobs)} jobs")
 
     # 2. Store all jobs in database first (duplicates are skipped)
-    new_count = state.store_jobs(all_jobs)
+    new_ids = state.store_jobs(all_jobs)
+    new_count = len(new_ids)
     print(f"Stored {new_count} new jobs in database")
 
-    # 3. Get unposted jobs from DB and classify only those
-    unposted = state.get_unposted_jobs(100, max_age_hours=CHECK_INTERVAL_HOURS + 1)
+    # 3. Get only the newly inserted jobs from this cycle
+    unposted = state.get_unposted_jobs(new_ids)
     classified_count = 0
 
     if classifier and unposted:

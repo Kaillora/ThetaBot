@@ -80,6 +80,8 @@ class MajorClassifier:
         'frontend engineer', 'backend engineer', 'full stack', 'fullstack',
         'web developer', 'mobile engineer', 'ios engineer', 'android engineer',
         'devops engineer', 'site reliability', 'sre', 'ml engineer', 'ai engineer',
+        'machine learning', 'deep learning', 'computer vision', 'nlp', 'data engineer',
+        'data scientist', 'data analyst', 'data science',
     ]
 
     def _pre_classify(self, jobs) -> None:
