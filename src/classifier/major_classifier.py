@@ -80,15 +80,22 @@ class MajorClassifier:
         'frontend engineer', 'backend engineer', 'full stack', 'fullstack',
         'web developer', 'mobile engineer', 'ios engineer', 'android engineer',
         'devops engineer', 'site reliability', 'sre', 'ml engineer', 'ai engineer',
-        'machine learning', 'deep learning', 'computer vision', 'nlp', 'data engineer',
-        'data scientist', 'data analyst', 'data science',
+        'machine learning', 'deep learning', 'computer vision', 'nlp',
+    ]
+
+    DS_TITLE_KEYWORDS = [
+        'data engineer', 'data scientist', 'data analyst', 'data science',
+        'data analytics', 'business intelligence', 'bi analyst', 'quant analyst',
+        'analytics engineer',
     ]
 
     def _pre_classify(self, jobs) -> None:
         """Rule-based pre-classification for unambiguous titles before hitting GPT."""
         for job in jobs:
             title_lower = job.title.lower()
-            if any(kw in title_lower for kw in self.CS_TITLE_KEYWORDS):
+            if any(kw in title_lower for kw in self.DS_TITLE_KEYWORDS):
+                job.category = 'Data Science'
+            elif any(kw in title_lower for kw in self.CS_TITLE_KEYWORDS):
                 job.category = 'Computer Science'
 
     def classify_jobs(self, jobs) -> None:
