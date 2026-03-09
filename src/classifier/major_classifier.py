@@ -78,25 +78,78 @@ class MajorClassifier:
     CS_TITLE_KEYWORDS = [
         'software engineer', 'software developer', 'software development',
         'frontend engineer', 'backend engineer', 'full stack', 'fullstack',
-        'web developer', 'mobile engineer', 'ios engineer', 'android engineer',
-        'devops engineer', 'site reliability', 'sre', 'ml engineer', 'ai engineer',
-        'machine learning', 'deep learning', 'computer vision', 'nlp',
+        'web developer', 'web engineer', 'mobile engineer', 'ios engineer',
+        'android engineer', 'devops engineer', 'site reliability engineer', 'sre',
+        'ml engineer', 'ai engineer', 'machine learning engineer',
+        'deep learning', 'computer vision engineer', 'nlp engineer',
+        'cloud engineer', 'platform engineer', 'infrastructure engineer',
+        'game developer', 'game engineer', 'qa engineer', 'test engineer',
+        'automation engineer', 'systems engineer', 'computer science',
     ]
 
     DS_TITLE_KEYWORDS = [
         'data engineer', 'data scientist', 'data analyst', 'data science',
         'data analytics', 'business intelligence', 'bi analyst', 'quant analyst',
-        'analytics engineer',
+        'quantitative analyst', 'analytics engineer', 'applied scientist',
+        'research scientist', 'machine learning', 'ml researcher',
+        'statistical analyst', 'forecasting analyst',
+    ]
+
+    EE_TITLE_KEYWORDS = [
+        'electrical engineer', 'electronics engineer', 'hardware engineer',
+        'pcb engineer', 'circuit design', 'embedded engineer', 'embedded systems',
+        'fpga engineer', 'asic engineer', 'rf engineer', 'power engineer',
+        'semiconductor engineer', 'signal processing', 'avionics engineer',
+        'analog engineer', 'digital design engineer', 'vlsi engineer',
+        'firmware engineer', 'test equipment engineer', 'power systems engineer',
+    ]
+
+    ME_TITLE_KEYWORDS = [
+        'mechanical engineer', 'aerospace engineer', 'manufacturing engineer',
+        'cad engineer', 'thermal engineer', 'fluids engineer', 'cfd engineer',
+        'robotics engineer', 'materials engineer', 'propulsion engineer',
+        'automotive engineer', 'structural engineer', 'product design engineer',
+        'mechatronics engineer', 'hvac engineer', 'combustion engineer',
+        'dynamics engineer', 'tooling engineer', 'process engineer',
+        'reliability engineer', 'quality engineer', 'systems integration engineer',
+    ]
+
+    CE_TITLE_KEYWORDS = [
+        'civil engineer', 'structural engineer', 'geotechnical engineer',
+        'transportation engineer', 'environmental engineer', 'construction engineer',
+        'infrastructure engineer', 'water resources engineer', 'surveyor',
+        'land development engineer', 'site engineer', 'drainage engineer',
+        'traffic engineer', 'bridge engineer', 'project engineer',
+    ]
+
+    CYBER_TITLE_KEYWORDS = [
+        'security engineer', 'cybersecurity engineer', 'cyber engineer',
+        'penetration tester', 'pentester', 'soc analyst', 'security analyst',
+        'incident response', 'appsec engineer', 'threat intelligence',
+        'vulnerability researcher', 'red team', 'blue team', 'devsecops',
+        'information security', 'infosec', 'network security engineer',
+        'cloud security engineer', 'identity engineer', 'iam engineer',
+        'forensics analyst', 'security operations',
+    ]
+
+    # Ordered by specificity — check narrow categories before broad ones
+    _KEYWORD_RULES = [
+        ('Cybersecurity',          'CYBER_TITLE_KEYWORDS'),
+        ('Data Science',           'DS_TITLE_KEYWORDS'),
+        ('Electrical Engineering', 'EE_TITLE_KEYWORDS'),
+        ('Mechanical Engineering', 'ME_TITLE_KEYWORDS'),
+        ('Civil Engineering',      'CE_TITLE_KEYWORDS'),
+        ('Computer Science',       'CS_TITLE_KEYWORDS'),
     ]
 
     def _pre_classify(self, jobs) -> None:
         """Rule-based pre-classification for unambiguous titles before hitting GPT."""
         for job in jobs:
             title_lower = job.title.lower()
-            if any(kw in title_lower for kw in self.DS_TITLE_KEYWORDS):
-                job.category = 'Data Science'
-            elif any(kw in title_lower for kw in self.CS_TITLE_KEYWORDS):
-                job.category = 'Computer Science'
+            for category, attr in self._KEYWORD_RULES:
+                if any(kw in title_lower for kw in getattr(self, attr)):
+                    job.category = category
+                    break
 
     def classify_jobs(self, jobs) -> None:
         self._pre_classify(jobs)
