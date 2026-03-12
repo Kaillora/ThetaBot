@@ -147,7 +147,11 @@ async def check_jobs():
             if ch:
                 role_id = CATEGORY_ROLE_IDS.get(category)
                 msg = f"<@&{role_id}> New **{category}** opportunity!" if role_id else f"New **{category}** opportunity!"
-                await ch.send(content=msg, embed=embed)
+                try:
+                    await ch.send(content=msg, embed=embed)
+                except discord.errors.Forbidden:
+                    print(f"[PERMISSIONS ERROR] Missing permissions in channel: #{ch.name} (ID: {ch.id}, category: {category})")
+                    continue
 
             posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection
