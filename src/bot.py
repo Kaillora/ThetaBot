@@ -55,11 +55,13 @@ def get_parsers() -> list:
     return parsers
 
 
+
 def create_job_embed_from_row(row: dict) -> discord.Embed:
     """Create a Discord embed from a database row dict"""
+    apply_link = row.get('apply_link') or None
     embed = discord.Embed(
         title=f"{row['title']} @ {row['company']}",
-        url=row['apply_link'],
+        url=apply_link,
         color=0x00ff00,
         timestamp=datetime.utcnow()
     )
@@ -67,7 +69,7 @@ def create_job_embed_from_row(row: dict) -> discord.Embed:
     embed.add_field(name="Posted", value=row['date_posted'], inline=True)
     if row.get('category'):
         embed.add_field(name="Category", value=row['category'], inline=True)
-    embed.description = f"**[Click here to Apply]({row['apply_link']})**"
+    embed.description = f"**[Click here to Apply]({apply_link})**" if apply_link else "*No apply link available*"
     embed.set_footer(text=f"Theta Bot | Source: {row['source']}")
     return embed
 
@@ -96,11 +98,15 @@ async def check_jobs():
         print(f"[{parser.source_name}] Found {len(jobs)} jobs")
 
     # 2. Store all jobs in database first (duplicates are skipped)
-    new_count = state.store_jobs(all_jobs)
+    new_ids = state.store_jobs(all_jobs)
+    new_count = len(new_ids)
     print(f"Stored {new_count} new jobs in database")
 
-    # 3. Get unposted jobs from DB and classify only those
-    unposted = state.get_unposted_jobs(100)
+    # 3. Get newly inserted jobs + any recent unposted backlog
+    new_jobs = state.get_unposted_jobs(new_ids)
+    backlog = state.get_recent_unposted_jobs(days=7)
+    seen_ids = {r['id'] for r in new_jobs}
+    unposted = (new_jobs + [r for r in backlog if r['id'] not in seen_ids])[:100]
     classified_count = 0
 
     if classifier and unposted:
@@ -135,7 +141,6 @@ async def check_jobs():
 
         for row in unposted:
             category = row.get('category') or 'General Engineering'
-            posted_ids.append(row['id'])
 
             if category == 'General Engineering':
                 skipped += 1
@@ -153,6 +158,7 @@ async def check_jobs():
                     print(f"[PERMISSIONS ERROR] Missing permissions in channel: #{ch.name} (ID: {ch.id}, category: {category})")
                     continue
 
+            posted_ids.append(row['id'])
             posted_count += 1
             await asyncio.sleep(0.25)  # Rate limit protection
 

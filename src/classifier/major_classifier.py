@@ -33,37 +33,28 @@ class MajorClassifier:
 
         system_message = (
             "You are classifying job listings for an engineering college job board. "
-            "Each category corresponds to a college major:\n"
-            "All roles must require a bachelor's degree or higher. If a role typically requires "
-            "only a high school diploma, trade certification, or associate's degree, classify it "
-            "as General Engineering regardless of the job title.\n\n"
-            "- Computer Science: software engineering, web development, cloud computing, "
-            "DevOps, mobile, ML/AI, networking, platform, IT, QA, game development — "
-            "degree-level roles primarily involving writing or deploying software\n"
-            "- Electrical Engineering: hardware design, circuits, firmware, PCB design, power systems, "
-            "RF, semiconductors, signal processing, FPGA, embedded systems, avionics — "
-            "degree-level engineering/design roles only, not technician or field service roles\n"
-            "- Mechanical Engineering: manufacturing engineering, CAD, aerospace structures, "
-            "materials, robotics hardware, propulsion, thermal, fluid dynamics — "
-            "degree-level engineering/design roles only, not technician or field service roles\n"
-            "- Civil Engineering: structural, geotechnical, transportation, water resources, "
-            "construction management, surveying, environmental engineering, urban planning — "
-            "degree-level roles only\n"
-            "- Data Science: data analysis, analytics, business intelligence, statistics, "
-            "data engineering — industry/applied degree-level roles only. Do NOT include academic "
-            "research, research scientist, scientist, or roles focused on publishing research\n"
-            "- Cybersecurity: security engineering, penetration testing, SOC analysis, "
-            "threat intelligence, information security, AppSec — degree-level technical roles only. "
-            "Do NOT include physical security, security guard, loss prevention, armed/unarmed guard, "
-            "or any non-technical security role\n"
-            "- General Engineering: anything that doesn't clearly fit the above, "
-            "computer architecture/hardware-software co-design roles, roles requiring "
-            "less than a bachelor's degree, trades/technician/field service roles, physical security "
-            "roles, and academic research roles not focused on industry applications\n\n"
-            "When a title is ambiguous, use the company and location for context. "
-            "Hands-on field and technician roles are General Engineering even if the title contains "
-            "an engineering discipline name. Research scientist roles are General Engineering unless "
-            "clearly industry data/analytics at a tech or finance company."
+            "Assign each job to exactly one category based on the job title. "
+            "Use company and location only if the title is ambiguous.\n\n"
+
+            "COMPUTER SCIENCE: Software/web/mobile development, DevOps, cloud, ML/AI, "
+            "data engineering, QA/test automation, IT, cloud infrastructure, game dev.\n\n"
+
+            "ELECTRICAL ENGINEERING: Hardware design, PCB/circuit design, embedded systems, "
+            "FPGA/ASIC, RF, power electronics, semiconductor, signal processing, avionics.\n\n"
+
+            "MECHANICAL ENGINEERING: Mechanical/aerospace/manufacturing design, CAD, "
+            "thermal/fluids/CFD, robotics hardware, materials, propulsion, automotive R&D.\n\n"
+
+            "CIVIL ENGINEERING: Civil/structural/geotechnical/transportation/environmental "
+            "engineering, construction, infrastructure, water resources, surveying.\n\n"
+
+            "DATA SCIENCE: Data scientist, data analyst, BI analyst, quant analyst, "
+            "applied scientist, analytics engineer, statistical modeling, forecasting.\n\n"
+
+            "CYBERSECURITY: Security engineer/analyst, penetration tester, SOC analyst, "
+            "incident response, AppSec, threat intelligence, vulnerability research.\n\n"
+
+            "GENERAL ENGINEERING: Use only if the role doesn't fit any category above."
         )
 
         response = self.client.chat.completions.create(
@@ -84,7 +75,84 @@ class MajorClassifier:
             if category in self.LABELS:
                 job.category = category
 
+    CS_TITLE_KEYWORDS = [
+        'software engineer', 'software developer', 'software development',
+        'frontend engineer', 'backend engineer', 'full stack', 'fullstack',
+        'web developer', 'web engineer', 'mobile engineer', 'ios engineer',
+        'android engineer', 'devops engineer', 'site reliability engineer', 'sre',
+        'ml engineer', 'ai engineer', 'machine learning engineer',
+        'deep learning', 'computer vision engineer', 'nlp engineer',
+        'cloud engineer', 'platform engineer', 'infrastructure engineer',
+        'game developer', 'game engineer', 'qa engineer', 'test engineer',
+        'automation engineer', 'systems engineer', 'computer science',
+    ]
+
+    DS_TITLE_KEYWORDS = [
+        'data engineer', 'data scientist', 'data analyst', 'data science',
+        'data analytics', 'business intelligence', 'bi analyst', 'quant analyst',
+        'quantitative analyst', 'analytics engineer', 'applied scientist',
+        'research scientist', 'machine learning', 'ml researcher',
+        'statistical analyst', 'forecasting analyst',
+    ]
+
+    EE_TITLE_KEYWORDS = [
+        'electrical engineer', 'electronics engineer', 'hardware engineer',
+        'pcb engineer', 'circuit design', 'embedded engineer', 'embedded systems',
+        'fpga engineer', 'asic engineer', 'rf engineer', 'power engineer',
+        'semiconductor engineer', 'signal processing', 'avionics engineer',
+        'analog engineer', 'digital design engineer', 'vlsi engineer',
+        'firmware engineer', 'test equipment engineer', 'power systems engineer',
+    ]
+
+    ME_TITLE_KEYWORDS = [
+        'mechanical engineer', 'aerospace engineer', 'manufacturing engineer',
+        'cad engineer', 'thermal engineer', 'fluids engineer', 'cfd engineer',
+        'robotics engineer', 'materials engineer', 'propulsion engineer',
+        'automotive engineer', 'structural engineer', 'product design engineer',
+        'mechatronics engineer', 'hvac engineer', 'combustion engineer',
+        'dynamics engineer', 'tooling engineer', 'process engineer',
+        'reliability engineer', 'quality engineer', 'systems integration engineer',
+    ]
+
+    CE_TITLE_KEYWORDS = [
+        'civil engineer', 'structural engineer', 'geotechnical engineer',
+        'transportation engineer', 'environmental engineer', 'construction engineer',
+        'infrastructure engineer', 'water resources engineer', 'surveyor',
+        'land development engineer', 'site engineer', 'drainage engineer',
+        'traffic engineer', 'bridge engineer', 'project engineer',
+    ]
+
+    CYBER_TITLE_KEYWORDS = [
+        'security engineer', 'cybersecurity engineer', 'cyber engineer',
+        'penetration tester', 'pentester', 'soc analyst', 'security analyst',
+        'incident response', 'appsec engineer', 'threat intelligence',
+        'vulnerability researcher', 'red team', 'blue team', 'devsecops',
+        'information security', 'infosec', 'network security engineer',
+        'cloud security engineer', 'identity engineer', 'iam engineer',
+        'forensics analyst', 'security operations',
+    ]
+
+    # Ordered by specificity — check narrow categories before broad ones
+    _KEYWORD_RULES = [
+        ('Cybersecurity',          'CYBER_TITLE_KEYWORDS'),
+        ('Data Science',           'DS_TITLE_KEYWORDS'),
+        ('Electrical Engineering', 'EE_TITLE_KEYWORDS'),
+        ('Mechanical Engineering', 'ME_TITLE_KEYWORDS'),
+        ('Civil Engineering',      'CE_TITLE_KEYWORDS'),
+        ('Computer Science',       'CS_TITLE_KEYWORDS'),
+    ]
+
+    def _pre_classify(self, jobs) -> None:
+        """Rule-based pre-classification for unambiguous titles before hitting GPT."""
+        for job in jobs:
+            title_lower = job.title.lower()
+            for category, attr in self._KEYWORD_RULES:
+                if any(kw in title_lower for kw in getattr(self, attr)):
+                    job.category = category
+                    break
+
     def classify_jobs(self, jobs) -> None:
+        self._pre_classify(jobs)
         to_api = [job for job in jobs if not job.category]
         if not to_api:
             return

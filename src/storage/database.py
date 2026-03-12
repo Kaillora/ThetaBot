@@ -54,36 +54,31 @@ class StateManager:
                 )
             """)
 
-    def store_jobs(self, jobs) -> int:
+    def store_jobs(self, jobs) -> list[int]:
         """Store a list of Job objects into the database.
 
         Uses INSERT ... ON CONFLICT to avoid duplicates.
-        Returns the number of newly inserted jobs.
-
-        Args:
-            jobs: list of Job dataclass instances
+        Returns the IDs of newly inserted jobs.
         """
-
         if not jobs:
-            return 0
+            return []
         self._ensure_connection()
-        
+
         values = [
             (j.unique_id, j.company, j.title, j.location,
              j.apply_link, j.date_posted, j.source, j.category,)
-            
             for j in jobs
         ]
-        
+
         with self.conn.cursor() as cur:
             psycopg2.extras.execute_values(
                 cur,
                 """INSERT INTO jobs (unique_id, company, title, location,
                    apply_link, date_posted, source, category)
-                   VALUES %s ON CONFLICT (unique_id) DO NOTHING""",
+                   VALUES %s ON CONFLICT (unique_id) DO NOTHING RETURNING id""",
                 values
             )
-            return cur.rowcount
+            return [row[0] for row in cur.fetchall()]
 
     def update_category(self, job_id: int, category: str) -> None:
         """Update the category for a job by its database ID"""
@@ -94,13 +89,28 @@ class StateManager:
                 (category, job_id)
             )
 
-    def get_unposted_jobs(self, limit: int = 50) -> list[dict]:
-        """Get jobs that haven't been posted to Discord yet"""
+    def get_unposted_jobs(self, job_ids: list[int]) -> list[dict]:
+        """Get unposted jobs by their IDs (newly inserted this cycle)."""
+        if not job_ids:
+            return []
         self._ensure_connection()
         with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
-                "SELECT * FROM jobs WHERE posted_to_discord = FALSE ORDER BY first_seen_at LIMIT %s",
-                (limit,)
+                "SELECT * FROM jobs WHERE id = ANY(%s) AND posted_to_discord = FALSE",
+                (job_ids,)
+            )
+            return cur.fetchall()
+
+    def get_recent_unposted_jobs(self, days: int = 7) -> list[dict]:
+        """Get unposted jobs inserted within the last N days (backlog catch-up)."""
+        self._ensure_connection()
+        with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """SELECT * FROM jobs
+                   WHERE posted_to_discord = FALSE
+                   AND first_seen_at > NOW() - INTERVAL '1 day' * %s
+                   ORDER BY first_seen_at""",
+                (days,)
             )
             return cur.fetchall()
 
